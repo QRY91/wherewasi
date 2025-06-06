@@ -1,101 +1,179 @@
-# miqro 🎤
+# wherewasi 🪂
 
-**Micro Audio Transcription - Local AI Voice Processing**
+**AI Context Generation CLI - The Ripcord for Developer Flow**
 
-Simple script for natural language processing using local AI and a decent microphone setup.
+Pull the cord, get context, keep building. Invisible until you need it.
 
-> *"But it works pretty well so far. I'm pretty happy."* - First successful test
+> *"Stop explaining your project again. Pull the ripcord instead."*
 
-## 🎯 The Vision
+## 🎯 What It Actually Does
 
-**Local-first audio transcription** that:
-- Uses local AI (no cloud dependencies)
-- Requires only a decent microphone
-- Processes voice to text efficiently  
-- Integrates with QRY ecosystem intelligence
+**wherewasi** tracks your development ecosystem passively and generates dense AI context summaries on demand. Like a ripcord - invisible until you need perfect context for AI collaboration.
 
-## ✅ Proven Results
+**Current reality (working MVP):**
+- Scans multiple git projects in your ecosystem
+- Finds recent activity and key files automatically  
+- Generates structured context for AI handoffs
+- Copies to clipboard or saves to database
+- Cross-project search with file:line precision
 
-**First successful test output:**
-```
-📝 Transcribed text:
-====================
-Hello.
-So I've been doing a lot of general strategy talk today and one of these things was actually
-starting this little thing called Micro, which is just a very small and simple script.
-It can use to do natural language processing locally using local AI and nothing more than
-a decent microphone setup and I guess a decent computer if you want to actually, you know,
-record stuff properly.
-But it works pretty well so far.
-I'm pretty happy.
-====================
+## 🪂 Quick Start (30 seconds)
 
-📋 Copied to clipboard!
-💾 Saved to: /tmp/voice_text_1749231727.txt
-```
-
-## 🧠 Ecosystem Integration
-
-**Part of QRY ecosystem intelligence:**
-- **Input**: Voice recordings, concepts, discussions
-- **Processing**: Local AI transcription
-- **Output**: Text for uroboro capture, wherewasi context
-- **Storage**: Local files + clipboard integration
-
-**Future integration:**
 ```bash
-# Voice → uroboro capture pipeline
-miqro record | uroboro capture --db --tags "voice-input"
+# Build and install
+go build -o wherewasi .
 
-# Voice → wherewasi context
-miqro transcribe meeting.wav | wherewasi context --source "meeting"
+# Initialize ripcord tracking
+./wherewasi start
 
-# Voice → ecosystem intelligence
-miqro process | ecosystem intelligence pipeline
+# Check ecosystem status  
+./wherewasi status
+
+# Pull the ripcord - get AI context
+./wherewasi pull
+
+# Context now in clipboard → paste into AI chat
 ```
 
-## 🔧 Technical Stack
+## ⚡ Core Commands
 
-- **Audio Processing**: Local AI (likely Whisper or similar)
-- **Dependencies**: Minimal, local-first
-- **Output Format**: Plain text, clipboard ready
-- **Storage**: Temporary files + permanent capture options
+```bash
+# Start passive tracking
+wherewasi start
 
-## 📊 Success Metrics
+# Get instant AI context (clipboard ready)
+wherewasi pull
 
-- ✅ **Accurate transcription** - demonstrated in first test
-- ✅ **Clipboard integration** - immediate usability
-- ✅ **Local processing** - no external dependencies
-- 🔄 **Ecosystem integration** - planned for QRY tools
+# Check ecosystem status
+wherewasi status
 
-## 🚀 Development Status
+# Search across projects  
+wherewasi pull --keyword "whisper" --project "miqro"
 
-**Current**: Proof of concept working, successful test completed  
-**Next**: Formalize implementation, integrate with ecosystem  
-**Context**: Born from need for hands-free input due to wrist pain
+# View context history
+wherewasi pull --history
+```
 
-## 🎭 Origin Story
+## 🔍 What Gets Tracked
 
-**The context loss that started it all:**
-1. Built successful miqro transcription tool
-2. Got excellent results
-3. Completely lost track of which AI chat helped set it up
-4. This frustration validated the entire QRY ecosystem vision
-5. Used the experience to improve wherewasi and create this proper project
+**File Intelligence:**
+- Recent git commits and file changes
+- Key project files (README, main files, configs)
+- Chat history files with conversation ranges
+- Active session detection (recent modifications)
 
-**Meta-learning**: Even context tool builders experience context loss!
+**Cross-Project Awareness:**
+- 13+ projects in QRY ecosystem currently tracked
+- File:line precision in search results  
+- Chat conversation context with line ranges
+- Project relationships and dependencies
 
-## 🔮 Future Vision
+## 📊 Sample Output
 
-**miqro as ecosystem input layer:**
-- Voice → Text → Context → Intelligence
-- Hands-free development workflow
-- Audio meeting capture → project context
-- Voice notes → automatic uroboro captures
-- Accessibility-first design for RSI/wrist issues
+```
+🪂 WHEREWASI CONTEXT - miqro project
+═══════════════════════════════════════
+
+📍 PROJECT: miqro (AI voice transcription tool)
+📅 TIMEFRAME: Last 7 days  
+⚡ ACTIVE SESSION: Recent file modifications detected
+
+🎯 PROJECT SUMMARY:
+Local-first audio transcription using Whisper AI. Working MVP with successful 
+test results. Part of QRY ecosystem for hands-free development workflow.
+
+📝 RECENT ACTIVITY:
+• Enhanced audio processing pipeline  
+• Integrated clipboard functionality
+• Added ecosystem integration patterns
+
+🔍 KEY FILES:
+main.py → Core transcription logic with Whisper integration
+README.md → Project documentation and test results
+requirements.txt → Dependencies (whisper, pyaudio, etc.)
+
+💬 RECENT DISCUSSIONS:
+cursor_miqro_setup.md:245-267 → Whisper installation and config
+cursor_debug_session.md:89-102 → Audio input troubleshooting
+```
+
+## 🏗️ Current Architecture
+
+**Local-First Design:**
+- SQLite database in `~/.local/share/wherewasi/`
+- XDG-compliant directory handling  
+- No cloud dependencies or telemetry
+- Cross-platform compatibility (Go)
+
+**Testing & CI:**
+- Database tests covering all operations
+- CLI integration tests for core workflows
+- GitHub Actions pipeline with 3 stages
+- Coverage reporting and quality gates
+
+## 🎯 Honest Status Report
+
+**What's Working Today:**
+- ✅ Context generation from git + file analysis
+- ✅ Cross-project ecosystem intelligence  
+- ✅ Clipboard integration for instant AI handoff
+- ✅ Persistent context storage and search
+- ✅ Chat history scanning with line precision
+- ✅ Basic CI/CD pipeline with test coverage
+
+**What's Still Rough:**
+- 🔄 No background daemon (manual `start` required)
+- 🔄 Basic search (no semantic/AI-powered matching)
+- 🔄 Limited file type intelligence  
+- 🔄 No integration with other QRY tools yet
+
+**What's Planned:**
+- Background daemon for truly passive tracking
+- Smarter pattern recognition across projects
+- Integration with uroboro and doggowoof
+- Enhanced context density optimization
+
+## 🛠️ Development
+
+```bash
+# Run tests
+go test -v ./...
+
+# Run specific test suites
+go test -v ./internal/database  # Database tests
+go test -v .                    # CLI integration tests
+
+# Build binary
+go build -o wherewasi .
+```
+
+## 📈 The Vision (Long-term)
+
+**Ripcord for AI Collaboration:**
+- Pull cord → get perfect context → continue building
+- Works across complex multi-project ecosystems
+- Eliminates "explain my project again" overhead  
+- Maintains developer flow state during AI handoffs
+
+**Philosophy**: Be invisible until needed. Deploy instantly when pulled. Save developers from context loss crashes.
+
+## 🔗 QRY Ecosystem Integration
+
+**Complementary Tools:**
+- **uroboro**: Content generation from captured work
+- **doggowoof**: Alert monitoring and triage  
+- **osmotic**: World state awareness and intelligence
+
+**Shared Principles:**
+- Local-first privacy protection
+- Respect for developer flow states
+- Tools that work quietly in background
+- No cloud dependencies or data sharing
 
 ---
 
-**Status**: Successful proof of concept, formalizing implementation  
-**Ecosystem Position**: Input layer for QRY developer intelligence system  
-**Documentation**: Captured in qry_labs case study 
+**Status**: Working MVP with basic ripcord functionality  
+**Next**: Background daemon and smarter context intelligence  
+**Philosophy**: Underpromise, overdeliver. Show the working tool, not AI buzzwords.
+
+*Pull the cord. Get context. Keep building.* 🪂 
