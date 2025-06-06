@@ -1,0 +1,168 @@
+name: Wherewasi CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Test Suite
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.23'
+        
+    - name: Run unit tests
+      run: go test -v ./internal/...
+      
+    - name: Run tests with coverage
+      run: go test -race -coverprofile=coverage.out -covermode=atomic ./internal/...
+
+  build-and-test:
+    name: Build & Integration Tests
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.23'
+        
+    - name: Build wherewasi binary
+      run: go build -o wherewasi .
+      
+    - name: Test basic commands
+      run: |
+        ./wherewasi --help
+        ./wherewasi status
+        ./wherewasi start
+        
+    - name: Test ripcord functionality
+      run: |
+        # Test basic context generation
+        ./wherewasi pull --clipboard=false --save=false
+        
+        # Test with keywords
+        ./wherewasi pull --keyword "test" --clipboard=false --save=false
+        
+        # Test status after operations
+        ./wherewasi status
+        
+    - name: Test persistence functionality
+      run: |
+        # Test context saving
+        ./wherewasi pull --save --clipboard=false
+        
+        # Test history retrieval
+        ./wherewasi pull --history
+        
+        # Test keyword search in history
+        ./wherewasi pull --history --keyword "test"
+        
+        # Verify XDG compliance
+        test -d ~/.local/share/wherewasi
+        test -f ~/.local/share/wherewasi/context.sqlite
+        
+        echo "✅ All integration tests passed!"
+
+    - name: Test cross-project intelligence
+      run: |
+        # Create a test git repo structure
+        mkdir -p ../test-project
+        cd ../test-project
+        git init
+        echo "# Test Project" > README.md
+        git add README.md
+        git commit -m "Initial commit"
+        
+        # Go back to wherewasi
+        cd ../wherewasi
+        
+        # Test ecosystem detection
+        ./wherewasi status | grep -q "projects tracked"
+        
+        # Test project-specific context
+        ./wherewasi pull --project "test-project" --clipboard=false --save=false
+        
+        echo "✅ Cross-project intelligence working!"
+
+    # System-wide installation regression test
+    - name: Test system installation
+      run: |
+        # Install to PATH
+        mkdir -p ~/.local/bin
+        cp ./wherewasi ~/.local/bin/
+        export PATH="$HOME/.local/bin:$PATH"
+        
+        # Test system commands work
+        wherewasi --help | grep -q "generates dense AI context summaries"
+        wherewasi status
+        
+        # Test core workflow doesn't crash
+        wherewasi pull --save --clipboard=false
+        wherewasi pull --history
+        
+        echo "✅ System installation working!"
+
+  quality-gate:
+    name: Quality Gate
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.23'
+        
+    - name: Verify ripcord commands
+      run: |
+        # Build fresh binary
+        go build -o wherewasi .
+        
+        # Ensure all core commands exist and work
+        ./wherewasi start || exit 1
+        ./wherewasi pull --clipboard=false --save=false || exit 1
+        ./wherewasi status || exit 1
+        
+        # Test help system
+        ./wherewasi --help || exit 1
+        ./wherewasi pull --help || exit 1
+        
+        echo "✅ Quality gate passed - ripcord commands functional!"
+        
+    - name: Verify database consistency
+      run: |
+        # Test database operations don't leave inconsistent state
+        ./wherewasi pull --save --clipboard=false
+        ./wherewasi pull --save --clipboard=false
+        ./wherewasi pull --history | grep -q "RECENT CONTEXTS"
+        
+        # Verify search functionality
+        ./wherewasi pull --keyword "database" --save --clipboard=false
+        ./wherewasi pull --history --keyword "database" | grep -q "HISTORY SEARCH"
+        
+        echo "✅ Database consistency verified!"
+        
+    - name: Notify success
+      if: success()
+      run: |
+        echo "🪂 Wherewasi CI pipeline completed successfully!"
+        echo "🎯 Ripcord deployment ready for production"
+        echo "📊 Ready for doggowoof monitoring integration"
+        echo "🔄 Ecosystem compatibility with uroboro maintained" 

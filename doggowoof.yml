@@ -1,0 +1,66 @@
+# DOGGOWOOF Monitoring Configuration for Wherewasi
+name: wherewasi
+description: "AI context generation CLI - ripcord monitoring"
+
+# GitHub webhook monitoring (requires doggowoof daemon running)
+github:
+  repository: "QRY91/wherewasi"
+  events:
+    - workflow_run  # CI pipeline failures
+    - issues        # Bug reports
+    - pull_request  # Code review alerts
+  
+  # Alert patterns
+  alerts:
+    - name: "CI Pipeline Failure"
+      event: "workflow_run"
+      condition: "conclusion == 'failure'"
+      priority: "high"
+      message: "🪂 WHEREWASI CI FAILED - Ripcord deployment broken!"
+      
+    - name: "Test Suite Failure" 
+      event: "workflow_run"
+      condition: "name == 'Wherewasi CI' && conclusion == 'failure'"
+      priority: "critical"
+      message: "🚨 WHEREWASI TESTS FAILING - Core functionality compromised!"
+      
+    - name: "Build Failure"
+      event: "workflow_run" 
+      condition: "jobs.build-and-test.conclusion == 'failure'"
+      priority: "high"
+      message: "🔧 WHEREWASI BUILD BROKEN - Binary compilation failed!"
+
+# Local file monitoring (optional)
+local:
+  files:
+    - "main.go"
+    - "internal/database/database.go"
+    - ".github/workflows/ci.yml"
+  
+  patterns:
+    - name: "Database Schema Change"
+      file: "internal/database/database.go"
+      pattern: "CREATE TABLE|ALTER TABLE|DROP TABLE" 
+      priority: "medium"
+      message: "📊 WHEREWASI DATABASE SCHEMA CHANGED - Migration needed?"
+
+# Integration with QRY ecosystem tools
+ecosystem:
+  uroboro_integration: true  # Share context about wherewasi alerts
+  cross_project_awareness: true  # Monitor related projects
+
+# Notification preferences  
+notifications:
+  desktop: true
+  sound: true
+  urgency_levels:
+    critical: "bark_loud"      # Immediate attention needed
+    high: "bark_normal"        # Important but not urgent
+    medium: "quiet_woof"       # Informational
+    low: "tail_wag"           # Success notifications
+
+# Learning preferences
+learning:
+  acknowledge_tracking: true   # Learn from user responses
+  pattern_detection: true      # Identify recurring issues
+  noise_reduction: true        # Auto-filter non-actionable alerts 
