@@ -6,6 +6,18 @@ Pull the cord, get context, keep building. Invisible until you need it.
 
 > *"Stop explaining your project again. Pull the ripcord instead."*
 
+## 🤖 AI Collaboration Transparency
+
+This project documentation and development has been enhanced through systematic AI collaboration following QRY Labs methodology:
+
+- **Human-Centered Development**: All core functionality, architecture decisions, and strategic direction remain human-controlled
+- **AI-Enhanced Documentation**: AI assistants help improve documentation quality and systematic presentation
+- **Transparent Attribution**: AI collaboration is acknowledged openly as part of QRY's commitment to ethical technology use
+- **Context Generation Focus**: wherewasi specifically enables better AI collaboration by providing systematic context
+- **Systematic Methodology**: AI collaboration follows structured procedures documented in `/ai/` directory
+
+**Core Principle**: AI enhances human capability rather than replacing human judgment. wherewasi exemplifies this by generating context that enables more effective human-AI collaboration while keeping humans in control of strategic decisions.
+
 ## 🎯 What It Actually Does
 
 **wherewasi** tracks your development ecosystem passively and generates dense AI context summaries on demand. Like a ripcord - invisible until you need perfect context for AI collaboration.
