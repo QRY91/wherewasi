@@ -9,7 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/QRY91/wherewasi/internal/database"
+	"github.com/QRY91/wherewasi/internal/common"
+	"github.com/QRY91/wherewasi/internal/ecosystem"
 	"github.com/atotto/clipboard"
 	"github.com/spf13/cobra"
 )
@@ -50,6 +51,10 @@ var pullCmd = &cobra.Command{
 
 		// Handle history search
 		if history_flag {
+			if db == nil {
+				fmt.Println("⚠️  Database not available - history search disabled")
+				return
+			}
 			if keyword != "" {
 				results, err := db.SearchStoredContexts(keyword)
 				if err != nil {
@@ -84,7 +89,7 @@ var pullCmd = &cobra.Command{
 		context := generateEnhancedContext(project, days, keyword)
 
 		// Save context if requested (default true for production usage)
-		if save_flag {
+		if save_flag && db != nil {
 			sessionInfo := detectActiveSession()
 			if sessionInfo == "" {
 				sessionInfo = "Context pull"
@@ -516,7 +521,7 @@ func extractChatInsights(filename string) []string {
 }
 
 // Database instance (will be initialized in main)
-var db *database.DB
+var db *ecosystem.EcosystemDB
 
 func searchCrossProject(keyword string, project string) []string {
 	var allResults []string
@@ -670,12 +675,24 @@ func init() {
 }
 
 func main() {
-	// Initialize database
+	// Initialize ecosystem database with fallback to local
 	var err error
-	db, err = database.NewDB("")
+	config := ecosystem.DatabaseConfig{
+		ToolName:     ecosystem.ToolWherewasi,
+		FallbackPath: filepath.Join(common.GetDataDir(), "context.sqlite"),
+		ForceLocal:   false,
+	}
+	
+	db, err = ecosystem.NewEcosystemDB(config)
 	if err != nil {
-		fmt.Printf("⚠️  Failed to initialize database: %v\n", err)
+		fmt.Printf("⚠️  Failed to initialize ecosystem database: %v\n", err)
 		// Continue without persistence
+	} else {
+		if db.IsShared() {
+			fmt.Printf("🔗 Connected to shared ecosystem database: %s\n", db.DatabasePath())
+		} else {
+			fmt.Printf("📁 Using local database: %s\n", db.DatabasePath())
+		}
 	}
 
 	if err := rootCmd.Execute(); err != nil {

@@ -29,6 +29,30 @@ This project documentation and development has been enhanced through systematic 
 - Copies to clipboard or saves to database
 - Cross-project search with file:line precision
 
+## 🔗 QRY Ecosystem Integration (Experimental)
+
+**wherewasi** now supports experimental integration with the QRY ecosystem database, enabling cross-tool intelligence while maintaining complete independence.
+
+**Ecosystem Features:**
+- **Automatic Discovery**: Detects shared QRY ecosystem database (`~/.local/share/qry/ecosystem.sqlite`)
+- **Context Sharing**: Context sessions can be accessed by other QRY tools (uroboro, examinator)
+- **Cross-Tool Intelligence**: Enhanced context when working with other ecosystem tools
+- **Graceful Fallback**: Works normally with local database when ecosystem unavailable
+
+**Status Indicators:**
+```bash
+wherewasi pull
+# Ecosystem mode: "🔗 Connected to shared ecosystem database"
+# Local mode:     "📁 Using local database"
+```
+
+**Force Local Mode:**
+```bash
+wherewasi pull --local  # Force local database mode
+```
+
+**Integration Status**: Experimental implementation - tools share intelligence when connected, work independently when not. No functionality is lost in either mode.
+
 ## 🪂 Quick Start (30 seconds)
 
 ```bash
