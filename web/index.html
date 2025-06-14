@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhereWasI 🪂 - AI Context Generation CLI</title>
+    <meta name="description" content="Pull the ripcord, get context, keep building. Invisible until you need it - perfect AI collaboration context from your development ecosystem.">
+
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+
+    <style>
+        :root {
+            /* Ripcord theme - sky blues and emergency orange */
+            --sky-light: #e0f2fe;
+            --sky-medium: #0284c7;
+            --sky-deep: #0c4a6e;
+            --emergency-orange: #ea580c;
+            --emergency-light: #fed7aa;
+            --cloud-white: #f8fafc;
+            --parachute-gray: #475569;
+            --text-dark: #1e293b;
+            --success-green: #059669;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            background: linear-gradient(135deg, var(--sky-light) 0%, var(--cloud-white) 100%);
+            min-height: 100vh;
+        }
+
+        /* Floating clouds animation */
+        .clouds {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .cloud {
+            position: absolute;
+            background: white;
+            border-radius: 50px;
+            opacity: 0.6;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .cloud:before,
+        .cloud:after {
+            content: '';
+            position: absolute;
+            background: white;
+            border-radius: 50px;
+        }
+
+        .cloud1 {
+            width: 100px;
+            height: 40px;
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .cloud2 {
+            width: 80px;
+            height: 30px;
+            top: 40%;
+            left: 70%;
+            animation-delay: 5s;
+        }
+
+        .cloud3 {
+            width: 120px;
+            height: 45px;
+            top: 60%;
+            left: 20%;
+            animation-delay: 10s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) translateX(0px); }
+            25% { transform: translateY(-20px) translateX(30px); }
+            50% { transform: translateY(-10px) translateX(-20px); }
+            75% { transform: translateY(-30px) translateX(10px); }
+        }
+
+        /* Layout */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Navigation */
+        nav {
+            padding: 1rem 0;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(2, 132, 199, 0.1);
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: bold;
+            font-size: 1.25rem;
+            color: var(--sky-deep);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-dark);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--sky-medium);
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 4rem 0 6rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: bold;
+            margin-bottom: 1.5rem;
+            color: var(--sky-deep);
+        }
+
+        .ripcord-text {
+            color: var(--emergency-orange);
+            position: relative;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--parachute-gray);
+            margin-bottom: 3rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Ripcord Demo */
+        .ripcord-demo {
+            background: white;
+            border: 2px solid var(--emergency-orange);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin: 2rem auto;
+            max-width: 600px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .ripcord-button {
+            background: var(--emergency-orange);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ripcord-button:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(234, 88, 12, 0.4);
+        }
+
+        .ripcord-button:active {
+            transform: translateY(0);
+        }
+
+        /* Context Display */
+        .context-display {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: var(--sky-light);
+            border-radius: 0.5rem;
+            border-left: 4px solid var(--success-green);
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            display: none;
+        }
+
+        .context-display.show {
+            display: block;
+            animation: deploy 0.5s ease-out;
+        }
+
+        @keyframes deploy {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Features Grid */
+        .features {
+            padding: 4rem 0;
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            color: var(--sky-deep);
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        /* Commands Section */
+        .commands {
+            padding: 4rem 0;
+        }
+
+        .command-example {
+            background: var(--text-dark);
+            color: #10b981;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+            margin: 1rem 0;
+            overflow-x: auto;
+        }
+
+        .command-example .prompt {
+            color: #60a5fa;
+        }
+
+        .command-example .comment {
+            color: #6b7280;
+        }
+
+        /* QRY Ecosystem */
+        .ecosystem {
+            padding: 4rem 0;
+            background: var(--sky-deep);
+            color: white;
+        }
+
+        .ecosystem-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .ecosystem-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .ecosystem-card h3 {
+            color: var(--emergency-light);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Footer */
+        footer {
+            padding: 3rem 0;
+            background: var(--text-dark);
+            color: white;
+            text-align: center;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-links a {
+            color: var(--sky-light);
+            text-decoration: none;
+        }
+
+        .footer-links a:hover {
+            color: var(--emergency-orange);
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--success-green);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero {
+                padding: 2rem 0 4rem;
+            }
+
+            .ripcord-demo {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Loading state */
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .loading::after {
+            content: '🪂';
+            position: absolute;
+            right: 1rem;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating clouds background -->
+    <div class="clouds">
+        <div class="cloud cloud1"></div>
+        <div class="cloud cloud2"></div>
+        <div class="cloud cloud3"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="container">
+            <div class="nav-content">
+                <div class="logo">
+                    <span>🪂</span>
+                    <span>WhereWasI</span>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#commands">Commands</a></li>
+                    <li><a href="#ecosystem">QRY Ecosystem</a></li>
+                    <li><a href="https://github.com/QRY91/wherewasi">GitHub</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="status-badge">
+                <span>✅</span>
+                <span>Working MVP - Context Generation Ready</span>
+            </div>
+
+            <h1>
+                Pull the <span class="ripcord-text">Ripcord</span><br>
+                Get Context
+            </h1>
+
+            <p>
+                The ripcord for developer flow. Invisible until you need perfect context for AI collaboration.
+                Tracks your ecosystem passively, deploys context instantly.
+            </p>
+
+            <!-- Interactive Ripcord Demo -->
+            <div class="ripcord-demo">
+                <h3 style="margin-bottom: 1rem; color: var(--sky-deep);">🎯 Try the Ripcord</h3>
+                <p style="margin-bottom: 2rem; color: var(--parachute-gray);">
+                    Simulate pulling the ripcord to get instant AI context from your development ecosystem.
+                </p>
+
+                <button
+                    class="ripcord-button"
+                    hx-post="/api/pull-context"
+                    hx-target="#context-output"
+                    hx-indicator="#context-output"
+                    hx-swap="innerHTML"
+                >
+                    🪂 Pull Ripcord
+                </button>
+
+                <div id="context-output" class="context-display">
+                    <!-- Context will be loaded here via HTMX -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <h2 style="text-align: center; font-size: 2.5rem; color: var(--sky-deep); margin-bottom: 1rem;">
+                Invisible Until Needed
+            </h2>
+            <p style="text-align: center; color: var(--parachute-gray); font-size: 1.2rem; max-width: 600px; margin: 0 auto;">
+                Like a ripcord - you don't think about it until you need it. Then it saves you.
+            </p>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🪂</div>
+                    <h3>Emergency Context Deployment</h3>
+                    <p>Pull the ripcord when switching contexts. Get dense AI-ready summaries of your recent work, instantly copied to clipboard.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📡</div>
+                    <h3>Passive Ecosystem Tracking</h3>
+                    <p>Monitors 13+ projects automatically. Tracks git activity, file changes, and conversation history without getting in your way.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>AI Collaboration Ready</h3>
+                    <p>Generates perfect context for AI handoffs. Stop explaining your project again - just paste the context and start building.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🔍</div>
+                    <h3>Cross-Project Intelligence</h3>
+                    <p>File:line precision search across your entire ecosystem. Find that conversation or decision from weeks ago, instantly.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🏠</div>
+                    <h3>Local-First Privacy</h3>
+                    <p>SQLite database in ~/.local/share/wherewasi/. No cloud dependencies, no telemetry. Your context stays yours.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Zero Latency Access</h3>
+                    <p>Context generation in milliseconds. Database searches complete before you finish typing. Built for flow state preservation.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Commands Section -->
+    <section id="commands" class="commands">
+        <div class="container">
+            <h2 style="text-align: center; font-size: 2.5rem; color: var(--sky-deep); margin-bottom: 3rem;">
+                Ripcord Commands
+            </h2>
+
+            <div style="display: grid; gap: 2rem; max-width: 800px; margin: 0 auto;">
+                <div>
+                    <h3 style="color: var(--emergency-orange); margin-bottom: 1rem;">🚨 Emergency Context Pull</h3>
+                    <div class="command-example">
+<span class="prompt">$</span> wherewasi pull
+<span class="comment"># Instant context → clipboard → paste into AI chat</span>
+<span class="comment"># Like pulling a ripcord - instant deployment</span>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 style="color: var(--sky-medium); margin-bottom: 1rem;">📋 Ecosystem Status Check</h3>
+                    <div class="command-example">
+<span class="prompt">$</span> wherewasi status
+<span class="comment"># Quick overview of tracked projects</span>
+<span class="comment"># Recent activity across your ecosystem</span>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 style="color: var(--success-green); margin-bottom: 1rem;">🔍 Targeted Context Search</h3>
+                    <div class="command-example">
+<span class="prompt">$</span> wherewasi pull --keyword "whisper" --project "miqro"
+<span class="comment"># Find specific conversations or decisions</span>
+<span class="comment"># File:line precision across projects</span>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 style="color: var(--parachute-gray); margin-bottom: 1rem;">🎯 Passive Tracking</h3>
+                    <div class="command-example">
+<span class="prompt">$</span> wherewasi start
+<span class="comment"># Begin passive ecosystem monitoring</span>
+<span class="comment"># Invisible until you need the ripcord</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- QRY Ecosystem -->
+    <section id="ecosystem" class="ecosystem">
+        <div class="container">
+            <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 1rem;">
+                QRY Tool Ecosystem
+            </h2>
+            <p style="text-align: center; color: var(--sky-light); font-size: 1.2rem; max-width: 600px; margin: 0 auto 3rem;">
+                Context switching tools that work together seamlessly. Privacy-first, local-only, built for systematic creators.
+            </p>
+
+            <div class="ecosystem-grid">
+                <div class="ecosystem-card">
+                    <h3>🦑 SlopSquid</h3>
+                    <p>CLI document cleanup - removes AI artifacts while preserving your authentic voice. Feeds quality patterns to ecosystem awareness.</p>
+                    <a href="https://slopsquid.com" style="color: var(--emergency-light);">slopsquid.com →</a>
+                </div>
+
+                <div class="ecosystem-card">
+                    <h3>🧠 Osmotic</h3>
+                    <p>News awareness without engagement. World-state context that enhances wherewasi briefings with relevant external patterns.</p>
+                    <a href="https://osmotic.dev" style="color: var(--emergency-light);">osmotic.dev →</a>
+                </div>
+
+                <div class="ecosystem-card">
+                    <h3>🎤 Miqro</h3>
+                    <p>Voice transcription for hands-free development. Captures insights that feed into wherewasi's context intelligence.</p>
+                    <a href="https://miqro.dev" style="color: var(--emergency-light);">miqro.dev →</a>
+                </div>
+
+                <div class="ecosystem-card">
+                    <h3>🐍 Uroboro</h3>
+                    <p>Systematic capture and content generation. WhereWasI provides context, Uroboro preserves insights for future creation.</p>
+                    <a href="https://github.com/QRY91/uroboro" style="color: var(--emergency-light);">GitHub →</a>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 3rem;">
+                <p style="color: var(--sky-light); font-size: 1.1rem;">
+                    <strong>Philosophy:</strong> Tools that respect your attention, work quietly in the background,
+                    and deploy instantly when needed. No cloud dependencies, no engagement hooks.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-links">
+                <a href="https://github.com/QRY91/wherewasi">GitHub Repository</a>
+                <a href="https://github.com/QRY91/wherewasi/releases">Download CLI</a>
+                <a href="https://github.com/QRY91">QRY Ecosystem</a>
+            </div>
+
+            <p style="color: var(--sky-light); margin-bottom: 1rem;">
+                &copy; 2025 WhereWasI. Pull the cord. Get context. Keep building.
+            </p>
+
+            <p style="color: var(--parachute-gray); font-size: 0.9rem;">
+                Part of the <a href="https://github.com/QRY91" style="color: var(--emergency-orange);">QRY Tool Ecosystem</a>
+                - Privacy-first tools for systematic creators
+            </p>
+        </div>
+    </footer>
+
+    <!-- HTMX Context API Simulation -->
+    <script>
+        // Simulate the context API endpoint
+        document.body.addEventListener('htmx:configRequest', function(evt) {
+            if (evt.detail.path === '/api/pull-context') {
+                evt.preventDefault();
+
+                // Simulate network delay
+                setTimeout(() => {
+                    const contextOutput = document.getElementById('context-output');
+                    const sampleContext = `🪂 WHEREWASI CONTEXT - Current Session
+═══════════════════════════════════════
+
+📍 PROJECT: wherewasi (AI context generation tool)
+📅 TIMEFRAME: Last 7 days
+⚡ ACTIVE SESSION: Recent file modifications detected
+
+🎯 PROJECT SUMMARY:
+Local-first context generation CLI for AI collaboration. Working MVP with
+clipboard integration, cross-project ecosystem intelligence, and ripcord-style
+emergency context deployment.
+
+📝 RECENT ACTIVITY:
+• HTMX landing page development in progress
+• Biological theme implementation for osmotic
+• SlopSquid rebrand from browser extension to CLI
+• Framework experimentation across domain portfolio
+
+🔍 KEY FILES:
+main.go → Core CLI logic with context generation
+README.md → Project documentation and usage examples
+web/index.html → HTMX landing page with ripcord demo
+
+💬 RECENT DISCUSSIONS:
+cursor_ui_development.md:156-178 → HTMX vs React framework decisions
+cursor_ecosystem_integration.md:89-102 → QRY tool interconnection patterns
+
+🚀 NEXT ACTIONS:
+• Complete HTMX demo functionality
+• Add real context API endpoint
+• Integrate with local wherewasi CLI instance
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Context copied to clipboard → Ready for AI collaboration`;
+
+                    contextOutput.innerHTML = sampleContext;
+                    contextOutput.classList.add('show');
+
+                    // Copy to clipboard simulation
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(sampleContext.replace(/[^\x00-\x7F]/g, ""));
+                    }
+                }, 800);
+            }
+        });
+
+        // Add click-to-copy functionality
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('context-display')) {
+                const text = e.target.textContent;
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(text);
+
+                    // Visual feedback
+                    const original = e.target.style.background;
+                    e.target.style.background = 'var(--success-green)';
+                    e.target.style.color = 'white';
+                    setTimeout(() => {
+                        e.target.style.background = original;
+                        e.target.style.color = '';
+                    }, 300);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
